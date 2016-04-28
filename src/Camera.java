@@ -1,65 +1,126 @@
-/**
- * Created by cesar on 4/26/16.
- */
+import javafx.geometry.Point3D;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Camera {
     private static final Vector defaultRotationX = new Vector(1.0, 0.0, 0.0);
     private static final Vector defaultRotationY = new Vector(0.0, 1.0, 0.0);
     private static final Vector defaultDirectionZ = new Vector(0.0, 0.0, 1.0);
 
-    private Point position;
+    private double distance;
+    private Point3D position;
     private Double rotationX;
     private Double rotationY;
     private Double rotationZ;
-    private Ray[][] screen;
+    private Screen screen;
+    private Scene scene;
+    private BufferedImage picture;
 
-    public Camera(Point position, Double rotationX, Double rotationY, Double rotationZ, Integer sizeX, Integer sizeY) {
+    public Camera(Point3D position, Double rotationX, Double rotationY, Double rotationZ, Integer sizeX, Integer sizeY, Scene scene, double FOV) {
+        this.distance = sizeX/2 / Math.sin(Math.toRadians(FOV));
         this.position = position;
         this.rotationX = rotationX;
         this.rotationY = rotationY;
         this.rotationZ = rotationZ;
-        this.screen = new Ray[sizeX][sizeY];
-        for(int i = 0; i < sizeX; i++) {
-            for(int j = 0; j < sizeY; j++) {
+        this.scene = scene;
+        this.screen = new Screen(sizeX, sizeY);
+
+        for(int i = 0; i < this.screen.getSizeX(); i++) {
+            for(int j = 0; j < this.screen.getSizeY(); j++) {
                 Vector vectorX = Camera.defaultRotationX;
                 Vector vectorY = Camera.defaultRotationY;
                 Vector vectorZ = Camera.defaultDirectionZ;
+
                 try {
                     vectorX = Vector.setRotation(Camera.defaultRotationX, this.rotationY, Axis.Y);
                     vectorX = Vector.setRotation(vectorX, this.rotationZ, Axis.Z);
 
-                    System.out.println("vectorX" + vectorX.toString());
-
                     vectorY = Vector.setRotation(Camera.defaultRotationY, this.rotationX, Axis.X);
                     vectorY = Vector.setRotation(vectorY, this.rotationZ, Axis.Z);
-
-                    System.out.println("vectorY" + vectorY.toString());
 
                     vectorZ = Vector.setRotation(Camera.defaultDirectionZ, this.rotationX, Axis.X);
                     vectorZ = Vector.setRotation(vectorZ, this.rotationY, Axis.Y);
 
-                    System.out.println("vectorZ" + vectorZ.toString());
-
                 } catch (Exception e) {
                     e.printStackTrace();
+
                 }
-                vectorX = Vector.multiply(vectorX, -sizeX/2);
-                vectorY = Vector.multiply(vectorY, sizeY/2);
-                Vector rayVector = Vector.add(Vector.add(vectorX, vectorY), vectorZ);
-                System.out.println("rayVector" + rayVector.toString() + "\n");
-                this.screen[i][j] = new Ray(position, rayVector);
+                vectorX.mul(-this.screen.getSizeX()/2+i);
+                vectorY.mul(this.screen.getSizeY()/2-j);
+                vectorZ.mul((float) this.distance);
+
+                vectorX.add(vectorY);
+                vectorX.add(vectorZ);
+                Vector rayVector = vectorX;
+
+                this.screen.setRay(i, j, new Ray(position, rayVector));
+
             }
         }
     }
 
     public void shoot() {
 
+        this.picture = new BufferedImage(this.screen.getSizeX(), this.screen.getSizeY(), BufferedImage.TYPE_INT_RGB);
+        for(int i = 0; i < this.screen.getSizeX(); i++) {
+            for(int j = 0; j < this.screen.getSizeY(); j++) {
+                this.picture.setRGB(i, j, this.traceRay(this.screen.getRay(i, j)).getRGB());
+            }
+        }
     }
 
-    public Point getPosition() {
+    public void print(String filePath) throws IOException {
+        Integer count = 0;
+        if(this.picture != null) {
+            File file = new File(filePath + "image_counter");
+            if(file.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                count = Integer.parseInt(br.readLine());
+                br.close();
+            }
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            bw.write(Integer.toString(count + 1));
+            bw.close();
+
+            File outputFile = new File(filePath + "image" + (count+1) + ".png");
+            ImageIO.write(this.picture, "png", outputFile);
+        }
+
+    }
+
+    public Color traceRay(Ray ray) {
+        Point3D nearestIntersection = null;
+        Color intersectionColor = Color.lightGray;
+        for(Displayable displayable : this.scene.getDisplayables()) {
+            Point3D intersectionPoint = displayable.getIntersectionPoint(ray);
+            if(intersectionPoint != null) {
+                if(nearestIntersection != null) {
+                    if(new Vector(ray.getStartingPoint(), nearestIntersection).length() > new Vector(ray.getStartingPoint(), intersectionPoint).length()) {
+                        nearestIntersection = intersectionPoint;
+                        intersectionColor = displayable.color;
+                    }
+                } else {
+                    nearestIntersection = intersectionPoint;
+                    intersectionColor = displayable.color;
+                }
+            }
+        }
+        return intersectionColor;
+    }
+
+    public Point3D getPosition() {
         return position;
     }
 
-    public void setPosition(Point position) {
+    public void setPosition(Point3D position) {
         this.position = position;
     }
 
@@ -87,11 +148,11 @@ public class Camera {
         this.rotationZ = rotationZ;
     }
 
-    public Ray[][] getScreen() {
+    public Screen getScreen() {
         return screen;
     }
 
-    public void setScreen(Ray[][] screen) {
+    public void setScreen(Screen screen) {
         this.screen = screen;
     }
 }

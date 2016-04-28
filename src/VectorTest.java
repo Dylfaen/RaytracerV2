@@ -23,7 +23,6 @@ public class VectorTest {
 
         Vector result2 = Vector.setRotation(vx, Math.toRadians(45), Axis.Y);
         System.out.println("result2" + result2.toString());
-
     }
 
     @Test

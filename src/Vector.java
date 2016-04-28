@@ -1,65 +1,73 @@
-import com.sun.deploy.config.VerboseDefaultConfig;
-import com.sun.javafx.geom.Matrix3f;
+import com.sun.javafx.geom.Vec3f;
+import javafx.geometry.Point3D;
 
 import java.util.Objects;
 
-/**
- * Created by cesar on 4/26/16.
- */
-public class Vector {
-    private Double x;
-    private Double y;
-    private Double z;
+public class Vector extends Vec3f{
+
+    public Vector(Float x, Float y, Float z) {
+        super(x, y, z);
+    }
 
     public Vector(Double x, Double y, Double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        super(new Float(x), new Float(y), new Float(z));
+
+    }
+
+    public Vector(Point3D a, Point3D b) {
+        this(b.getX() - a.getX(), b.getY() - a.getY(), b.getZ() - a.getZ());
+    }
+
+    public Vector(Point3D p) {
+        this(p.getX(), p.getY(), p.getZ());
     }
 
     public static Vector setRotation(Vector v, Double angle, Enum<Axis> axis) throws Exception {
         Vector v2;
         if(axis == Axis.X) {
             v2 = new Vector(
-                    1 * v.getX() + 0 * v.getY() + 0 * v.getZ(),
-                    0 * v.getX() +  Math.cos(angle) * v.getY() + -Math.sin(angle) * v.getZ(),
-                    0 * v.getX() +  Math.sin(angle) * v.getY() +  Math.cos(angle) * v.getZ());
+                    1. * v.getX() + 0. * v.getY() + 0. * v.getZ(),
+                    0. * v.getX() +  Math.cos(angle) * v.getY() + -Math.sin(angle) * v.getZ(),
+                    0. * v.getX() +  Math.sin(angle) * v.getY() +  Math.cos(angle) * v.getZ());
         } else if(axis == Axis.Y) {
             v2 = new Vector(
-                     Math.cos(angle) * v.getX() + 0 * v.getY() +  Math.sin(angle) * v.getZ(),
-                    0 * v.getX() +  1 * v.getY() + 0 * v.getZ(),
-                    -Math.sin(angle) * v.getX() +  0 * v.getY() +  Math.cos(angle) * v.getZ());
+                     Math.cos(angle) * v.getX() + 0. * v.getY() +  Math.sin(angle) * v.getZ(),
+                    0. * v.getX() +  1. * v.getY() + 0. * v.getZ(),
+                    -Math.sin(angle) * v.getX() +  0. * v.getY() +  Math.cos(angle) * v.getZ());
         } else if(axis == Axis.Z) {
 
             v2 = new Vector(
-                    Math.cos(angle) * v.getX() + -Math.sin(angle) * v.getY() + 0 * v.getZ(),
-                    Math.sin(angle) * v.getX() +  Math.cos(angle) * v.getY() + 0 * v.getZ(),
-                    0 * v.getX() + 0 * v.getY() + 1 * v.getZ());
+                    Math.cos(angle) * v.getX() + -Math.sin(angle) * v.getY() + 0. * v.getZ(),
+                    Math.sin(angle) * v.getX() +  Math.cos(angle) * v.getY() + 0. * v.getZ(),
+                    0. * v.getX() + 0. * v.getY() + 1. * v.getZ());
         } else {
             throw new Exception("Axis is supported");
         }
         return v2;
     }
 
-    public static Vector add (Vector v1, Vector v2) {
-        Vector v3 = new Vector(v1.getX()+v2.getX(), v1.getY() + v2.getY(), v1.getZ() + v2.getZ());
-        return v3;
+    public Float getX() {
+        return this.x;
     }
 
-    public static Vector multiply(Vector v1, Integer scalar){
-        return new Vector(v1.getX() * scalar, v1.getY() * scalar, v1.getZ()*scalar);
+    public Float getY() {
+        return this.y;
     }
 
-    public Double getX() {
-        return x;
+    public Float getZ() {
+        return this.z;
     }
 
-    public Double getY() {
-        return y;
+    public void setX(Float x) {
+        this.x = x;
     }
 
-    public Double getZ() {
-        return z;
+    public void setY(Float y) {
+        this.y = y;
+    }
+
+    public void setZ(Float z) {
+        this.z = z;
     }
 
     @Override

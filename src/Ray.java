@@ -1,19 +1,22 @@
-/**
- * Created by cesar on 4/26/16.
- */
+import javafx.geometry.Point3D;
+
+import java.awt.*;
+
 public class Ray {
-    private Point startingPoint;
+    private Point3D startingPoint;
     private Vector direction;
 
-    public Ray(Point staringPoint, Vector direction) {
+    public Ray(Point3D staringPoint, Vector direction) {
         this.startingPoint = staringPoint;
         this.direction = direction;
+        //this.direction.normalize();
     }
 
-    /*public static Point getIntersectionPoint(Ray ray) {
+    public Point3D getStartingPoint() {
+        return startingPoint;
+    }
 
-
-    };*/
-
-
+    public Vector getDirection() {
+        return direction;
+    }
 }
