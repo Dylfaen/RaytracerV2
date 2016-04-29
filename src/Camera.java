@@ -4,10 +4,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Camera {
     private static final Vector defaultRotationX = new Vector(1.0, 0.0, 0.0);
@@ -50,7 +46,6 @@ public class Camera {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-
                 }
                 vectorX.mul(-this.screen.getSizeX()/2+i);
                 vectorY.mul(this.screen.getSizeY()/2-j);
@@ -112,6 +107,7 @@ public class Camera {
                     intersectionColor = displayable.color;
                 }
             }
+//            System.out.println(displayable.color);
         }
         return intersectionColor;
     }
